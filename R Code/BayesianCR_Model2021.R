@@ -1,0 +1,242 @@
+#########################################################################
+### Felix Pabon-Rodriguez
+### Dissertation R Code
+### Bayesian Capture-Recapture Model for Mice/Tick RTV Field Data
+#########################################################################
+
+
+#########################################################################
+# Loading libraries
+#########################################################################
+
+# Loading libraries
+options(repos="https://cran.rstudio.com")
+install_load <- function(pkg){
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg))
+    install.packages(new.pkg, dependencies = TRUE)
+  sapply(pkg, require, character.only = TRUE)
+}
+
+my_packages <- c("readxl", "dplyr", "coda", "rjags", "MASS", "ggplot2",
+                 "R2jags", "lattice", "bayesplot", "BayesPostEst", "ggmcmc", 
+                 "RCurl", "truncnorm", "kableExtra", "mvtnorm", "rlist", 
+                 "extraDistr", "msm", "tmvtnorm", "runjags", "plotrix",
+                 "lubridate", "ggpubr", "stringr", "nimble",
+                 "igraph", "parallel", "doParallel", "MCMCvis", "tibble")
+invisible(install_load(my_packages))
+
+
+########################################################################
+# Reading data
+########################################################################
+
+# Creating clusters
+ncore <- 3    
+cl <- makeCluster(ncore, outfile = "", type = "FORK")
+clusterSetRNGStream(cl, iseed = 20105)
+registerDoParallel(cl)
+
+source(file = "Read_RTVField_Data_ExtendedVersion.R")
+
+########################################################################
+# Bayesian model
+########################################################################
+
+Model_Bayesian <- nimbleCode({
+  
+  # Priors ====================================================================
+  
+  # Site Membership and Data Augmentation (Mice)
+  psi ~ dbeta(1,1)
+  sigma2.site.member ~ dgamma(1,1)
+  sigma2.site.encounter ~ dgamma(1,1)
+  for(s in 1:nsites){
+    beta.site[s] ~ dnorm(0, sd = sqrt(sigma2.site.member))
+    alpha.site[s] ~ dnorm(0, sd = sqrt(sigma2.site.encounter))
+  }
+  
+  # Subject-specific Covariate Effects
+  alpha.adult ~ dnorm(0, sd = 1)  
+  alpha.subadult ~ dnorm(0, sd = 1)
+  alpha.male ~ dnorm(0, sd = 1)
+  alpha.behavior ~ dnorm(0, sd = 1)
+  
+  # Prior for Missing Values on Covariates or Latent Process ==================
+  p.adult ~ dbeta(1, 1)
+  p.subadult ~ dbeta(1, 1)
+  p.male ~ dbeta(1, 1)
+  for(i in 1:M){
+    AgeAdult[i] ~ dbern(p.adult)
+    AgeSubAdult[i] ~ dbern(p.subadult)
+    SexMale[i] ~ dbern(p.male)
+  }
+  
+  
+  # MODEL COMPONENTS ==============================================
+  
+  ### MICE
+  # Site Membership
+  for(s in 1:nsites){
+    log(lambda[s]) <- beta.site[s]
+    siteprob[s] <- lambda[s]/sum(lambda[1:nsites])
+  }
+  
+  # Observation Process
+  for(i in 1:M){
+    Site[i] ~ dcat(siteprob[1:nsites])
+    z[i] ~ dbern(psi)
+    site_membership[i] <- Site[i]*z[i]
+    for(k in 1:nOccasions){
+      logit(p[i,k]) <- alpha.site[Site[i]] + alpha.adult*AgeAdult[i] +
+        alpha.subadult*AgeSubAdult[i] + alpha.male*SexMale[i] +
+        alpha.behavior*Behavior[i,k]
+      Encounter[i,k] ~ dbern(p[i,k] * z[i])  
+    }
+  }
+  
+  # Derived Parameters/Quantities
+  # Mice Population Size
+  for(s in 1:nsites) {N_mice_site[s] <- sum(site_membership[1:M] == s)}
+  N_total <- sum(z[1:M])
+  
+})
+
+########################################################################
+# Objects 
+########################################################################
+
+parameters <- c("psi", "sigma2.site.member", "sigma2.site.encounter", 
+                "alpha.adult", "beta.site", "alpha.site","alpha.subadult", 
+                "alpha.male", "alpha.behavior", "p.adult", "p.subadult", 
+                "p.male","N_mice_site", "siteprob", "lambda","N_total")
+
+
+nimbledata <- list(z = z_ind_2021,
+                   Site = Site2021,
+                   Encounter = Binary_Encounter2021,
+                   AgeAdult = AgeAdult2021,
+                   AgeSubAdult = AgeSubAdult2021,
+                   SexMale = SexMale2021)
+
+constants <- list(M = nrow(Binary_Encounter2021),
+                  nOccasions = length(full_dates_2021),
+                  nsites = nsites2021,
+                  Behavior = Final_Behavior2021)
+
+inits <- function() {
+  
+  # Missing Indices for Covariates and Outcomes
+  miss.Site2021 <- which(is.na(Site2021))
+  miss.z2021 <- which(is.na(z_ind_2021))
+  miss.AgeAdult2021 <- which(is.na(AgeAdult2021))
+  miss.AgeSubAdult2021 <- which(is.na(AgeSubAdult2021))
+  miss.SexMale2021 <- which(is.na(SexMale2021))
+  miss.Binary_Encounter2021 <- which(is.na(Binary_Encounter2021))
+  
+  # Objects
+  z_init_2021 <- rep(NA,length(z_ind_2021))
+  init.Site2021 <- rep(NA,length(Site2021))
+  init.AgeAdult2021 <- rep(NA,length(AgeAdult2021))
+  init.AgeSubAdult2021 <- rep(NA,length(AgeSubAdult2021))
+  init.SexMale2021 <- rep(NA,length(SexMale2021))
+  init.Binary_Encounter2021 <- matrix(NA,nrow(Binary_Encounter2021),
+                                      ncol(Binary_Encounter2021))
+  
+  # Initial Values for Missing Values
+  init.Site2021[miss.Site2021] <- sample(1:6,length(miss.Site2021),replace = TRUE)
+  z_init_2021[miss.z2021] <- rep(1,length(miss.z2021))
+  init.AgeAdult2021[miss.AgeAdult2021] <- rbinom(length(miss.AgeAdult2021),size = 1, prob = 0.5)
+  init.AgeSubAdult2021[miss.AgeSubAdult2021] <- 1 - init.AgeAdult2021[miss.AgeAdult2021]
+  init.SexMale2021[miss.SexMale2021] <- rbinom(length(miss.SexMale2021),size = 1, prob = 0.5)
+  init.Binary_Encounter2021[miss.Binary_Encounter2021] <- rbinom(length(miss.Binary_Encounter2021),
+                                                                 size = 1, prob = 0.5)
+  
+  list(alpha.adult = runif(1), 
+       alpha.subadult = runif(1), 
+       alpha.male = runif(1),
+       alpha.behavior = runif(1), 
+       sigma2.site.member = runif(1),
+       sigma2.site.encounter = runif(1),
+       p.adult = runif(1), 
+       p.subadult = runif(1), 
+       p.male = runif(1),
+       psi = runif(1),
+       beta.site = runif(6), 
+       alpha.site = runif(6),
+       z = z_init_2021,
+       Site = init.Site2021,
+       Encounter = init.Binary_Encounter2021,
+       AgeAdult = init.AgeAdult2021,
+       AgeSubAdult = init.AgeSubAdult2021,
+       SexMale = init.SexMale2021)
+}
+
+
+########################################################################
+# Running model
+########################################################################
+
+time1 <- Sys.time() 
+fit <- foreach(x = 1:ncore, .packages = "nimble", .verbose = TRUE) %dopar% {
+  nimbleMCMC(code = Model_Bayesian,
+             constants = constants,
+             data = nimbledata,
+             monitors = parameters,
+             inits = inits(),
+             niter = 30000, 
+             nburnin = 5000, 
+             nchains = 1,
+             thin = 5,
+             progressBar = TRUE,
+             summary = TRUE,
+             samplesAsCodaMCMC = TRUE)
+}
+time2 <- Sys.time() 
+(runtime <- time2-time1)
+set_idx <- sample(1:1000,1)
+cat(paste0("File name is: fit_CR2021_idx",set_idx,".rds"))
+saveRDS(fit, paste0("./fit_CR2021_idx",set_idx,".rds"))
+stopCluster(cl)
+
+
+########################################################################
+# Posterior summary
+########################################################################
+
+want_summary <- FALSE
+
+if(want_summary == TRUE){
+  results_file2021 <- readRDS("fit_CR2021_idx399.rds")
+  results_mcmc2021 <- as.mcmc.list(lapply(1:3, 
+                                          function(x){as.mcmc(results_file2021[[x]]$samples)}))
+  par.names2021 <- colnames(results_mcmc2021[[1]])
+  MCMCsummary(results_mcmc2021,round = 2)[,c(1,2,4,3,5)]
+  
+  MCMCtrace(results_mcmc2021, 
+            params = par.names2021,
+            ISB = FALSE,
+            pdf = TRUE,
+            Rhat = TRUE)
+  
+  # Ticks size
+  mult.factor <- max(c(median(Final_Ticks2020[Final_Ticks2020>0],na.rm = TRUE),
+                       median(Final_Ticks2021[Final_Ticks2021>0],na.rm = TRUE),
+                       median(Final_Ticks2022[Final_Ticks2022>0],na.rm = TRUE)))
+  cc <- as.mcmc.list(lapply(1:3, 
+                            function(x){as.mcmc(mult.factor*results_file2021[[x]]$samples)}))
+  dft <- MCMCsummary(cc,round = 0)[1:7,c(1,2,4,3,5)]
+  rownames(dft) <- c(paste0("N_ticks_site[",1:6,"]"),"N_total_ticks")
+  dft
+  
+  mcmc_comb_2021 <- combine.mcmc(results_mcmc2021)
+  
+  # effect on probability of captures
+  # behavior effect
+  mean(mcmc_comb_2021[,"alpha.behavior"] < 0)
+  
+}
+
+
+
+
