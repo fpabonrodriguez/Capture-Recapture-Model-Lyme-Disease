@@ -1,0 +1,125 @@
+---
+title: "Supplementary Document: MCMC Diagnostics"
+subtitle: "A Bayesian Capture-Recapture model of vector-reservoir interaction in an ecological setting: a reservoir-targeted vaccine field study against Borrelia burgdorferi"
+author: "Felix M. Pabon-Rodriguez, Grant D. Brown, Maria Gomes-Solecki, and Christine A. Petersen"
+date: ''
+output: pdf_document
+---
+ 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Loading libraries
+options(repos="https://cran.rstudio.com")
+install_load <- function(pkg){
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg))
+    install.packages(new.pkg, dependencies = TRUE)
+  sapply(pkg, require, character.only = TRUE)
+}
+
+my_packages <- c("readxl", "dplyr", "coda", "ggplot2",
+                 "lattice", "bayesplot", "BayesPostEst", "ggmcmc", 
+                 "RCurl", "truncnorm", "kableExtra", "mvtnorm", "rlist", 
+                 "extraDistr", "msm", "tmvtnorm", "runjags", "plotrix",
+                 "lubridate", "ggpubr", "stringr", "nimble", "tibble",
+                 "igraph", "parallel", "doParallel", "MCMCvis", "LaplacesDemon")
+invisible(install_load(my_packages))
+
+########################################################################
+# Posterior samples
+########################################################################
+
+options(digits = 4)
+
+## 2020
+
+DP_file2020 <- readRDS("fit_DP2020_idx386_official.rds")
+DP_mcmc2020 <- as.mcmc.list(lapply(1:3,function(x){as.mcmc(DP_file2020[[x]]$samples)}))
+combined_listDP2020 <- combine.MCMC(DP_mcmc2020)
+
+CR_file2020 <- readRDS("fit_CR2020_idx523_official.rds")
+CR_mcmc2020 <- as.mcmc.list(lapply(1:3,function(x){as.mcmc(CR_file2020[[x]]$samples)}))
+combined_listCR2020 <- combine.MCMC(CR_mcmc2020)
+
+## 2021
+
+DP_file2021 <- readRDS("fit_DP2021_idx69_official.rds")
+DP_mcmc2021 <- as.mcmc.list(lapply(1:3,function(x){as.mcmc(DP_file2021[[x]]$samples)}))
+combined_listDP2021 <- combine.MCMC(DP_mcmc2021)
+
+CR_file2021 <- readRDS("fit_CR2021_idx399_official.rds")
+CR_mcmc2021 <- as.mcmc.list(lapply(1:3,function(x){as.mcmc(CR_file2021[[x]]$samples)}))
+combined_listCR2021 <- combine.MCMC(CR_mcmc2021)
+
+## 2022
+
+DP_file2022 <- readRDS("fit_DP2022_idx883_official.rds")
+DP_mcmc2022 <- as.mcmc.list(lapply(1:3,function(x){as.mcmc(DP_file2022[[x]]$samples)}))
+combined_listDP2022 <- combine.MCMC(DP_mcmc2022)
+
+CR_file2022 <- readRDS("fit_CR2022_idx409_official.rds")
+CR_mcmc2022 <- as.mcmc.list(lapply(1:3,function(x){as.mcmc(CR_file2022[[x]]$samples)}))
+combined_listCR2022 <- combine.MCMC(CR_mcmc2022)
+
+```
+
+**MCMC Diagnostics.** We computed the Monte-Carlo Standard Error (MCSE), which is a measure of the precision of the posterior distribution obtained from a MCMC algorithm. The purpose of MCSE is to provide a measure of the accuracy of the estimate of the posterior distribution, which is the distribution of the parameters of interest after taking into account the data and prior information. MCSE is calculated by estimating the standard deviation of the MCMC samples of the posterior distribution, which provides a measure of the variability in the posterior estimates due to the Monte Carlo sampling process. This value is then divided by the square root of the effective sample size (ESS), which is the number of independent samples that the MCMC algorithm generates. 
+
+\  
+
+```{r, echo=FALSE}
+getsummary2 <- function(data1, data2, BurPer = 0){
+  
+  MCSE1 <- MCSE2 <- NULL
+  
+  for(i in 1:ncol(data1)){
+    Param1 <- data1[-(1:BurPer),i]
+    MCSE1[i] <- LaplacesDemon::MCSE(Param1)
+  }
+  
+  for(i in 1:ncol(data2)){
+    Param2 <- data2[-(1:BurPer),i]
+    MCSE2[i] <- LaplacesDemon::MCSE(Param2)
+  }
+    
+  df1 <- data.frame(Parameter = colnames(data1), MCSE = MCSE1)
+  df2 <- data.frame(Parameter = colnames(data2), MCSE = MCSE2)
+  
+  
+  df <- rbind(df1,df2)[-c(1:7),]
+  rownames(df) <- NULL
+  df
+}
+```
+
+**Year 2020.** For the parameters in the model, we obtained MCSE values between $0.00067$ and $0.04953$, with mean of $0.01754$ and median of $0.01398$.
+
+```{r, echo=FALSE}
+MCSE_summary = getsummary2(data1 = combined_listCR2020, data2 = combined_listDP2020)
+kbl(MCSE_summary, booktabs = T, longtable = T) %>%
+kable_styling(latex_options = c("hold_position","striped"))
+```
+
+\ 
+
+**Year 2021.** For the parameters in the model, we obtained MCSE values between $0.00052$ and $0.06573$, with mean of $0.01584$ and median of $0.0109$.
+
+```{r, echo=FALSE}
+MCSE_summary = getsummary2(data1 = combined_listCR2021, data2 = combined_listDP2021)
+kbl(MCSE_summary, booktabs = T, longtable = T) %>%
+kable_styling(latex_options = c("hold_position","striped"))
+```
+
+\ 
+
+**Year 2022.** For the parameters in the model, we obtained MCSE values between $0.00016$ and $0.06956$, with mean of $0.01482$ and median of $0.01195$.
+
+```{r, echo=FALSE}
+MCSE_summary = getsummary2(data1 = combined_listCR2022, data2 = combined_listDP2022)
+kbl(MCSE_summary, booktabs = T, longtable = T) %>%
+kable_styling(latex_options = c("hold_position","striped"))
+```
+
+\ 
+
