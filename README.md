@@ -6,4 +6,4 @@ Abstract: Lyme disease is a bacterial infection caused by Borrelia burgdorferi, 
 
 Note: This folder repository contains supplemental materials for the following manuscript:
 
-"Bayesian Capture-Recapture model of vector-reservoir interaction in an ecological setting: a reservoir-targeted vaccine field study against Borrelia burgdorferi". Felix Pabon-Rodriguez, Grant Brown, Christine Petersen, and Maria Gomez-Solecki.
+"Bayesian Capture-Recapture model of vector-reservoir interaction in an ecological setting: a reservoir-targeted vaccine field study against Borrelia burgdorferi". Felix Pabon-Rodriguez, Grant Brown, Maria Gomez-Solecki, and Christine Petersen.
