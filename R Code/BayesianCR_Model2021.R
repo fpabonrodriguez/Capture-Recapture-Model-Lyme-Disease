@@ -78,8 +78,7 @@ Model_Bayesian <- nimbleCode({
   ### MICE
   # Site Membership
   for(s in 1:nsites){
-    log(lambda[s]) <- beta.site[s]
-    siteprob[s] <- lambda[s]/sum(lambda[1:nsites])
+    siteprob[s] ~ dbeta(1, 1)
   }
   
   # Observation Process
@@ -107,9 +106,9 @@ Model_Bayesian <- nimbleCode({
 ########################################################################
 
 parameters <- c("psi", "sigma2.site.member", "sigma2.site.encounter", 
-                "alpha.adult", "beta.site", "alpha.site","alpha.subadult", 
+                "alpha.adult", "alpha.site","alpha.subadult", 
                 "alpha.male", "alpha.behavior", "p.adult", "p.subadult", 
-                "p.male","N_mice_site", "siteprob", "lambda","N_total")
+                "p.male","N_mice_site", "siteprob","N_total")
 
 
 nimbledata <- list(z = z_ind_2021,
@@ -162,7 +161,7 @@ inits <- function() {
        p.subadult = runif(1), 
        p.male = runif(1),
        psi = runif(1),
-       beta.site = runif(6), 
+       siteprob = runif(6), 
        alpha.site = runif(6),
        z = z_init_2021,
        Site = init.Site2021,
@@ -207,7 +206,7 @@ stopCluster(cl)
 want_summary <- FALSE
 
 if(want_summary == TRUE){
-  results_file2021 <- readRDS("fit_CR2021_idx399.rds")
+  results_file2021 <- readRDS("fit_CR2021_idx399_official.rds")
   results_mcmc2021 <- as.mcmc.list(lapply(1:3, 
                                           function(x){as.mcmc(results_file2021[[x]]$samples)}))
   par.names2021 <- colnames(results_mcmc2021[[1]])
