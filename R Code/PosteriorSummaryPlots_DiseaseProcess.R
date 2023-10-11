@@ -1,10 +1,9 @@
 #########################################################################
 ### Felix Pabon-Rodriguez
-### Dissertation R Code
 ### Bayesian Capture-Recapture Model for Mice/Tick RTV Field Data
 #########################################################################
 
-
+ 
 #########################################################################
 # Loading libraries
 #########################################################################
@@ -70,7 +69,7 @@ get_other_params <- function(inc.mice,size.mice,prot.mice,
 
 ## 2020
 
-results_file2020 <- readRDS("fit_DP2020_idx386.rds")
+results_file2020 <- readRDS("fit_DP2020_idx103_new_official.rds")
 results_mcmc2020 <- as.mcmc.list(lapply(1:3, 
                                         function(x){as.mcmc(results_file2020[[x]]$samples)}))
 par.names2020 <- colnames(results_mcmc2020[[1]])
@@ -78,6 +77,7 @@ par.names2020 <- colnames(results_mcmc2020[[1]])
 MCMCsummary(results_mcmc2020,round = 2)[,c(4,2,3,5)]
 
 MCMCtrace(results_mcmc2020, 
+          filename = "trace_IDP_2020.pdf", 
           params = par.names2020,
           ISB = FALSE,
           pdf = TRUE,
@@ -97,7 +97,7 @@ post2020 <- get_other_params(inc.mice = Final_Incidence_Mice_2020,
 
 ## 2021
 
-results_file2021 <- readRDS("fit_DP2021_idx69.rds")
+results_file2021 <- readRDS("fit_DP2021_idx127_new_official.rds")
 results_mcmc2021 <- as.mcmc.list(lapply(1:3, 
                                         function(x){as.mcmc(results_file2021[[x]]$samples)}))
 par.names2021 <- colnames(results_mcmc2021[[1]])
@@ -105,6 +105,7 @@ par.names2021 <- colnames(results_mcmc2021[[1]])
 MCMCsummary(results_mcmc2021,round = 2)[,c(4,2,3,5)]
 
 MCMCtrace(results_mcmc2021, 
+          filename = "trace_IDP_2021.pdf", 
           params = par.names2021,
           ISB = FALSE,
           pdf = TRUE,
@@ -123,15 +124,16 @@ post2021 <- get_other_params(inc.mice = Final_Incidence_Mice_2021,
 
 ## 2022
 
-results_file2022 <- readRDS("fit_DP2022_idx883.rds")
+results_file2022 <- readRDS("fit_DP2022_idx110_new_official.rds")
 results_mcmc2022 <- as.mcmc.list(lapply(1:3, 
                                         function(x){as.mcmc(results_file2022[[x]]$samples)}))
 par.names2022 <- colnames(results_mcmc2022[[1]])
 
 MCMCsummary(results_mcmc2022,round = 2)[,c(4,2,3,5)]
 
-MCMCtrace(results_mcmc2022, 
-          params = par.names2022,
+MCMCtrace(results_mcmc2021, 
+          filename = "trace_IDP_2022.pdf", 
+          params = par.names2021,
           ISB = FALSE,
           pdf = TRUE,
           Rhat = TRUE)
@@ -461,3 +463,115 @@ mean(post2020$protected.mice[,5] < post2022$protected.mice[,5])
 
 mean(post2020$protected.mice[,3] < post2022$protected.mice[,3])
 mean(post2020$protected.mice[,4] < post2022$protected.mice[,4])
+
+
+
+########################################################################
+# Comparison
+# Trt vs Control per Time
+########################################################################
+
+# Site Pairs 
+# Control vs Trt
+# Orange vs Green
+# CPB(1) vs MHB(6) 
+# EHH(2) vs HCI(5)
+# GFH(3) vs GSV(4)
+
+# 2020 ------
+## Mice Infection Prevalence
+# Strength
+mean(post2020$prev.mice[,6] < post2020$prev.mice[,1])
+mean(post2020$prev.mice[,5] < post2020$prev.mice[,2])
+mean(post2020$prev.mice[,4] < post2020$prev.mice[,3])
+
+## Nymphal Infection Prevalence (Extracted)
+# Strength
+mean(post2020$nip.mice[,6] < post2020$nip.mice[,1])
+mean(post2020$nip.mice[,5] < post2020$nip.mice[,2])
+mean(post2020$nip.mice[,4] < post2020$nip.mice[,3])
+
+
+# Nymphal Infection Prevalence (Dragged)
+# Strength
+mean(post2020$nip.drag[,6] < post2020$nip.drag[,1])
+mean(post2020$nip.drag[,5] < post2020$nip.drag[,2])
+mean(post2020$nip.drag[,4] < post2020$nip.drag[,3])
+
+
+# Proportion of Mice with Protected OspA Levels
+# Strength
+mean(post2020$protected.mice[,6] > post2020$protected.mice[,1])
+mean(post2020$protected.mice[,5] > post2020$protected.mice[,2])
+mean(post2020$protected.mice[,4] > post2020$protected.mice[,3])
+
+
+# 2021 ------
+## Mice Infection Prevalence
+# Strength
+mean(post2021$prev.mice[,6] < post2021$prev.mice[,1])
+mean(post2021$prev.mice[,5] < post2021$prev.mice[,2])
+mean(post2021$prev.mice[,4] < post2021$prev.mice[,3])
+
+## Nymphal Infection Prevalence (Extracted)
+# Strength
+mean(post2021$nip.mice[,6] < post2021$nip.mice[,1])
+mean(post2021$nip.mice[,5] < post2021$nip.mice[,2])
+mean(post2021$nip.mice[,4] < post2021$nip.mice[,3])
+
+
+# Nymphal Infection Prevalence (Dragged)
+# Strength
+mean(post2021$nip.drag[,6] < post2021$nip.drag[,1])
+mean(post2021$nip.drag[,5] < post2021$nip.drag[,2])
+mean(post2021$nip.drag[,4] < post2021$nip.drag[,3])
+
+
+# Proportion of Mice with Protected OspA Levels
+# Strength
+mean(post2021$protected.mice[,6] > post2021$protected.mice[,1])
+mean(post2021$protected.mice[,5] > post2021$protected.mice[,2])
+mean(post2021$protected.mice[,4] > post2021$protected.mice[,3])
+
+
+
+# 2022 -----
+## Mice Infection Prevalence
+# Strength
+mean(post2022$prev.mice[,6] < post2022$prev.mice[,1])
+mean(post2022$prev.mice[,5] < post2022$prev.mice[,2])
+mean(post2022$prev.mice[,4] < post2022$prev.mice[,3])
+
+## Nymphal Infection Prevalence (Extracted)
+# Strength
+mean(post2022$nip.mice[,6] < post2022$nip.mice[,1])
+mean(post2022$nip.mice[,5] < post2022$nip.mice[,2])
+mean(post2022$nip.mice[,4] < post2022$nip.mice[,3])
+
+
+# Nymphal Infection Prevalence (Dragged)
+# Strength
+mean(post2022$nip.drag[,6] < post2022$nip.drag[,1])
+mean(post2022$nip.drag[,5] < post2022$nip.drag[,2])
+mean(post2022$nip.drag[,4] < post2022$nip.drag[,3])
+
+
+# Proportion of Mice with Protected OspA Levels
+# Strength
+mean(post2022$protected.mice[,6] > post2022$protected.mice[,1])
+mean(post2022$protected.mice[,5] > post2022$protected.mice[,2])
+mean(post2022$protected.mice[,4] > post2022$protected.mice[,3])
+
+
+
+
+
+
+
+
+
+
+
+
+
+

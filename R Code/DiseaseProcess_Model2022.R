@@ -1,6 +1,5 @@
 #########################################################################
 ### Felix Pabon-Rodriguez
-### Dissertation R Code
 ### Bayesian Capture-Recapture Model for Mice/Tick RTV Field Data
 #########################################################################
 
@@ -34,18 +33,18 @@ invisible(install_load(my_packages))
 # Creating clusters
 ncore <- 3    
 
-collected.data <- FALSE 
+collected.data <- TRUE 
 if(collected.data == TRUE){ # official data (collected)
   #cl <- makeCluster(ncore, outfile = "", type = "FORK")
   cl <- makeCluster(ncore, outfile = "DP2022.log")
-  clusterSetRNGStream(cl, iseed = 221122) # official
+  clusterSetRNGStream(cl, iseed = 202303) # official
   registerDoParallel(cl)
   source(file = "Read_RTVField_Data_ExtendedVersion.R")
   
 }else{ # permuted/perturbed data (for still blinded team members)
   #cl <- makeCluster(ncore, outfile = "", type = "FORK")
   cl <- makeCluster(ncore, outfile = "DP2022.log")
-  clusterSetRNGStream(cl, iseed = 221199) # perturbed
+  clusterSetRNGStream(cl, iseed = 202303) # perturbed
   registerDoParallel(cl)
   source(file = "Read_RTVField_Data_ExtendedVersion_Modified.R")
 }
@@ -312,12 +311,13 @@ stopCluster(cl)
 want_summary <- FALSE
 
 if(want_summary == TRUE){
-  results_file2022 <- readRDS("fit_DP2022_idx883.rds")
+  results_file2022 <- readRDS("fit_DP2022_idx110_new_official.rds")
   results_mcmc2022 <- as.mcmc.list(lapply(1:3, 
                                           function(x){as.mcmc(results_file2022[[x]]$samples)}))
   par.names2022 <- colnames(results_mcmc2022[[1]])
   
   MCMCtrace(results_mcmc2022, 
+            filename = "trace_IDP_2022.pdf", 
             params = par.names2022,
             ISB = FALSE,
             pdf = TRUE,
@@ -343,6 +343,13 @@ if(want_summary == TRUE){
     nip.drag[,s] <- rbeta(sim,1+Final_Nymphals_Drag_2022[s],
                           1+SampleDrag2022[s]-Final_Nymphals_Drag_2022[s])
   }
+  
+  outcomes2022 <- list(prev.mice=prev.mice,
+                       protected.mice=protected.mice,
+                       nip.mice=nip.mice,
+                       nip.drag=nip.drag)
+  
+  saveRDS(object = outcomes2022,file = "disease_outcomes_2022.rds")
   
 }
 

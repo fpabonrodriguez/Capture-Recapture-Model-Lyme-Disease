@@ -1,9 +1,7 @@
 #########################################################################
 ### Felix Pabon-Rodriguez
-### Dissertation R Code
 ### Bayesian Capture-Recapture Model for Mice/Tick RTV Field Data
 #########################################################################
-
 
 ########################################################################
 # Reading data
@@ -1324,6 +1322,8 @@ get_BinomialObject_perTime <- function(data){
 
 # 2020 
 # adding infection indicator
+
+# old criteria
 #pcr_data2020$Infected <- rep(NA,nrow(pcr_data2020))
 #for(i in 1:nrow(pcr_data2020)){
 #  if(i %in% 1:128){
@@ -1332,7 +1332,9 @@ get_BinomialObject_perTime <- function(data){
 #    pcr_data2020$Infected[i] <- ifelse(pcr_data2020$qPCR[i] <= 36.5, 1, 0)
 #  }
 #}
-pcr_data2020$Infected <- ifelse(pcr_data2020$qPCR >= 100, 1, 0)
+
+# pcr_data2020$Infected <- ifelse(pcr_data2020$qPCR >= 100, 1, 0)
+pcr_data2020$Infected <- ifelse(pcr_data2020$qPCR >= 10, 1, 0)
 
 
 # Modify trap label
@@ -1393,11 +1395,15 @@ PCR2020 <- as.matrix(left_join(id2020_table,
 
 # 2021 
 # adding infection indicator
+
+# old criteria
 #pcr_data2021$Infected <- rep(NA,nrow(pcr_data2021))
 #for(i in 1:nrow(pcr_data2021)){
 #    pcr_data2021$Infected[i] <- ifelse(pcr_data2021$qPCR[i] <= 37, 1, 0)
 #}
-pcr_data2021$Infected <- ifelse(pcr_data2021$qPCR >= 100, 1, 0)
+
+# pcr_data2021$Infected <- ifelse(pcr_data2021$qPCR >= 100, 1, 0)
+pcr_data2021$Infected <- ifelse(pcr_data2021$qPCR >= 10, 1, 0)
 
 # Modify trap label
 for(i in 1:nrow(pcr_data2021)){
@@ -1455,11 +1461,15 @@ PCR2021 <- as.matrix(left_join(id2021_table,
 
 # 2022 
 # adding infection indicator
+
+# old criteria 
 #pcr_data2022$Infected <- rep(NA,nrow(pcr_data2022))
 #for(i in 1:nrow(pcr_data2022)){
 #  pcr_data2022$Infected[i] <- ifelse(pcr_data2022$qPCR[i] <= 37, 1, 0)
 #}
-pcr_data2022$Infected <- ifelse(pcr_data2022$qPCR >= 100, 1, 0)
+
+# pcr_data2022$Infected <- ifelse(pcr_data2022$qPCR >= 100, 1, 0)
+pcr_data2022$Infected <- ifelse(pcr_data2022$qPCR >= 10, 1, 0)
 
 # Modify trap label
 for(i in 1:nrow(pcr_data2022)){
