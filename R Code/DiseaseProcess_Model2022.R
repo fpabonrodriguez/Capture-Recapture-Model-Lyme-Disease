@@ -37,17 +37,18 @@ collected.data <- TRUE
 if(collected.data == TRUE){ # official data (collected)
   #cl <- makeCluster(ncore, outfile = "", type = "FORK")
   cl <- makeCluster(ncore, outfile = "DP2022.log")
-  clusterSetRNGStream(cl, iseed = 202303) # official
+  clusterSetRNGStream(cl, iseed = 112303) # official
   registerDoParallel(cl)
   source(file = "Read_RTVField_Data_ExtendedVersion.R")
   
 }else{ # permuted/perturbed data (for still blinded team members)
   #cl <- makeCluster(ncore, outfile = "", type = "FORK")
   cl <- makeCluster(ncore, outfile = "DP2022.log")
-  clusterSetRNGStream(cl, iseed = 202303) # perturbed
+  clusterSetRNGStream(cl, iseed = 112303) # perturbed
   registerDoParallel(cl)
   source(file = "Read_RTVField_Data_ExtendedVersion_Modified.R")
 }
+
 ########################################################################
 # Bayesian model
 ########################################################################
@@ -311,7 +312,7 @@ stopCluster(cl)
 want_summary <- FALSE
 
 if(want_summary == TRUE){
-  results_file2022 <- readRDS("fit_DP2022_idx110_new_official.rds")
+  results_file2022 <- readRDS("fit_DP2022_idx584.rds")
   results_mcmc2022 <- as.mcmc.list(lapply(1:3, 
                                           function(x){as.mcmc(results_file2022[[x]]$samples)}))
   par.names2022 <- colnames(results_mcmc2022[[1]])

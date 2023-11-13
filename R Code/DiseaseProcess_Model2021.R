@@ -37,19 +37,17 @@ collected.data <- TRUE
 if(collected.data == TRUE){ # official data (collected)
   #cl <- makeCluster(ncore, outfile = "", type = "FORK")
   cl <- makeCluster(ncore, outfile = "DP2021.log")
-  clusterSetRNGStream(cl, iseed = 202302) # official
+  clusterSetRNGStream(cl, iseed = 112302) # official
   registerDoParallel(cl)
   source(file = "Read_RTVField_Data_ExtendedVersion.R")
   
 }else{ # permuted/perturbed data (for still blinded team members)
   #cl <- makeCluster(ncore, outfile = "", type = "FORK")
   cl <- makeCluster(ncore, outfile = "DP2021.log")
-  clusterSetRNGStream(cl, iseed = 202302) # perturbed
+  clusterSetRNGStream(cl, iseed = 112302) # perturbed
   registerDoParallel(cl)
   source(file = "Read_RTVField_Data_ExtendedVersion_Modified.R")
 }
-
-
 
 
 ########################################################################
@@ -315,7 +313,7 @@ stopCluster(cl)
 want_summary <- FALSE
 
 if(want_summary == TRUE){
-  results_file2021 <- readRDS("fit_DP2021_idx127_new_official.rds")
+  results_file2021 <- readRDS("fit_DP2021_idx725.rds")
   results_mcmc2021 <- as.mcmc.list(lapply(1:3, 
                                           function(x){as.mcmc(results_file2021[[x]]$samples)}))
   par.names2021 <- colnames(results_mcmc2021[[1]])

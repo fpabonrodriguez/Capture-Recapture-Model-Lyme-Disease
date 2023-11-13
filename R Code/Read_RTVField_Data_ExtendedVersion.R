@@ -1334,7 +1334,7 @@ get_BinomialObject_perTime <- function(data){
 #}
 
 # pcr_data2020$Infected <- ifelse(pcr_data2020$qPCR >= 100, 1, 0)
-pcr_data2020$Infected <- ifelse(pcr_data2020$qPCR >= 10, 1, 0)
+pcr_data2020$Infected <- ifelse(pcr_data2020$qPCR >= 50, 1, 0)
 
 
 # Modify trap label
@@ -1403,7 +1403,7 @@ PCR2020 <- as.matrix(left_join(id2020_table,
 #}
 
 # pcr_data2021$Infected <- ifelse(pcr_data2021$qPCR >= 100, 1, 0)
-pcr_data2021$Infected <- ifelse(pcr_data2021$qPCR >= 10, 1, 0)
+pcr_data2021$Infected <- ifelse(pcr_data2021$qPCR >= 50, 1, 0)
 
 # Modify trap label
 for(i in 1:nrow(pcr_data2021)){
@@ -1458,7 +1458,7 @@ PCR2021 <- as.matrix(left_join(id2021_table,
                                      tempPCR2021,
                                      by="UniqueID")[,-1])[,unique_dates_2021]
 
-
+ 
 # 2022 
 # adding infection indicator
 
@@ -1469,7 +1469,7 @@ PCR2021 <- as.matrix(left_join(id2021_table,
 #}
 
 # pcr_data2022$Infected <- ifelse(pcr_data2022$qPCR >= 100, 1, 0)
-pcr_data2022$Infected <- ifelse(pcr_data2022$qPCR >= 10, 1, 0)
+pcr_data2022$Infected <- ifelse(pcr_data2022$qPCR >= 50, 1, 0)
 
 # Modify trap label
 for(i in 1:nrow(pcr_data2022)){

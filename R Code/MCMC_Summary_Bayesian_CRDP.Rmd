@@ -34,7 +34,7 @@ options(digits = 4)
 
 ## 2020
 
-DP_file2020 <- readRDS("fit_DP2020_idx103_new_official.rds")
+DP_file2020 <- readRDS("fit_DP2020_idx621.rds")
 DP_mcmc2020 <- as.mcmc.list(lapply(1:3,function(x){as.mcmc(DP_file2020[[x]]$samples)}))
 combined_listDP2020 <- combine.MCMC(DP_mcmc2020)
 
@@ -44,7 +44,7 @@ combined_listCR2020 <- combine.MCMC(CR_mcmc2020)
 
 ## 2021
 
-DP_file2021 <- readRDS("fit_DP2021_idx127_new_official.rds")
+DP_file2021 <- readRDS("fit_DP2021_idx725.rds")
 DP_mcmc2021 <- as.mcmc.list(lapply(1:3,function(x){as.mcmc(DP_file2021[[x]]$samples)}))
 combined_listDP2021 <- combine.MCMC(DP_mcmc2021)
 
@@ -54,7 +54,7 @@ combined_listCR2021 <- combine.MCMC(CR_mcmc2021)
 
 ## 2022
 
-DP_file2022 <- readRDS("fit_DP2022_idx110_new_official.rds")
+DP_file2022 <- readRDS("fit_DP2022_idx584.rds")
 DP_mcmc2022 <- as.mcmc.list(lapply(1:3,function(x){as.mcmc(DP_file2022[[x]]$samples)}))
 combined_listDP2022 <- combine.MCMC(DP_mcmc2022)
 

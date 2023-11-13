@@ -69,7 +69,7 @@ get_other_params <- function(inc.mice,size.mice,prot.mice,
 
 ## 2020
 
-results_file2020 <- readRDS("fit_DP2020_idx103_new_official.rds")
+results_file2020 <- readRDS("fit_DP2020_idx621.rds")
 results_mcmc2020 <- as.mcmc.list(lapply(1:3, 
                                         function(x){as.mcmc(results_file2020[[x]]$samples)}))
 par.names2020 <- colnames(results_mcmc2020[[1]])
@@ -97,7 +97,7 @@ post2020 <- get_other_params(inc.mice = Final_Incidence_Mice_2020,
 
 ## 2021
 
-results_file2021 <- readRDS("fit_DP2021_idx127_new_official.rds")
+results_file2021 <- readRDS("fit_DP2021_idx725.rds")
 results_mcmc2021 <- as.mcmc.list(lapply(1:3, 
                                         function(x){as.mcmc(results_file2021[[x]]$samples)}))
 par.names2021 <- colnames(results_mcmc2021[[1]])
@@ -124,7 +124,7 @@ post2021 <- get_other_params(inc.mice = Final_Incidence_Mice_2021,
 
 ## 2022
 
-results_file2022 <- readRDS("fit_DP2022_idx110_new_official.rds")
+results_file2022 <- readRDS("fit_DP2022_idx584.rds")
 results_mcmc2022 <- as.mcmc.list(lapply(1:3, 
                                         function(x){as.mcmc(results_file2022[[x]]$samples)}))
 par.names2022 <- colnames(results_mcmc2022[[1]])
